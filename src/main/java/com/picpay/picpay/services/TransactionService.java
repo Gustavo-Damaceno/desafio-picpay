@@ -16,8 +16,12 @@ import java.util.Map;
 
 @Service
 public class TransactionService {
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private TransactionRepository repository;
@@ -25,7 +29,7 @@ public class TransactionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public void createTransaction(TransactionDTO transactionDTO) throws Exception {
+    public Transaction createTransaction(TransactionDTO transactionDTO) throws Exception {
         User sender = this.userService.findUserById(transactionDTO.senderId());
         User receiver = this.userService.findUserById(transactionDTO.receiverId());
 
@@ -48,6 +52,12 @@ public class TransactionService {
         this.repository.save(newTransaction);
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
+
+        this.notificationService.sendNotification(sender, "Transação realizada com sucesso!");
+
+        this.notificationService.sendNotification(receiver, "Transação recebida com sucesso!");
+
+        return newTransaction;
     }
 
     public Boolean authorizeTransaction(User sender, BigDecimal value) {
